@@ -16,7 +16,7 @@ Built with **Zama FHEVM** (Solidity library + Relayer SDK), **ethers/viem**, and
 
 <h2>
  <p align="center">
-  <a href="https://naururk.github.io/PrivatePortfolio/" target="_blank" rel="noopener noreferrer">
+  <a href="https://naururk.github.io/ETHBridge_PrivateMetrics/" target="_blank" rel="noopener noreferrer">
     🚀 Live Demo
   </a>
  </p>
