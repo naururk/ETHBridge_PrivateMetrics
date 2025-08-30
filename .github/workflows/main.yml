@@ -1,0 +1,41 @@
+name: Deploy static site to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'frontend/public/**'
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      # Если у тебя SPA-роутинг, можно добавить:
+      # - name: SPA fallback
+      #   run: cp frontend/public/index.html frontend/public/404.html
+
+      - name: Upload static files
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/public
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
