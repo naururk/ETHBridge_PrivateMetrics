@@ -1,8 +1,26 @@
 # Cross-Chain ETH Bridge — Private Metrics (Zama FHEVM)
 
+<p align="center"><img width="506" height="59" alt="image" src="https://github.com/user-attachments/assets/f3fe41d0-e08e-40ab-9aa5-5eb7abb0aab7" /> </p>
+
 A minimal, production‑style dApp that bridges ETH between **Ethereum Sepolia (L1)** and **Base Sepolia (L2)** while recording **fully homomorphically encrypted (FHE)** usage metrics. Users keep their per‑wallet totals and history private; only **k‑anonymous** aggregates can be published as public snapshots.
 
 Built with **Zama FHEVM** (Solidity library + Relayer SDK), **ethers/viem**, and plain HTML/CSS/JS.
+
+<h2>
+ <p align="center">
+  <a href="https://drive.google.com/file/d/1u3MLLM-1Oo25XfNwgAtDRhaR-SEIKlOj/view?usp=sharing" target="_blank" rel="noopener noreferrer">
+    🎥 Video PrivatePortfolio_demo
+  </a>
+ </p>
+</h2>
+
+<h2>
+ <p align="center">
+  <a href="https://naururk.github.io/PrivatePortfolio/" target="_blank" rel="noopener noreferrer">
+    🚀 Live Demo
+  </a>
+ </p>
+</h2>
 
 ---
 
