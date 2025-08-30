@@ -19,16 +19,23 @@ concurrency:
 
 jobs:
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Upload artifact
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      # Если это SPA с клиентским роутингом — раскомментируй:
+      # - name: SPA fallback
+      #   run: cp frontend/public/index.html frontend/public/404.html
+
+      - name: Upload static files
         uses: actions/upload-pages-artifact@v3
         with:
           path: frontend/public
-      - name: Deploy to GitHub Pages
+
+      - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
