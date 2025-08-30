@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin" />
+    <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Cross-Chain ETH Bridge — Private Metrics</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  </head>
+  <body>
+    <div id="toasts" class="toasts"></div>
+
+    <!-- Wallet Modal -->
+    <div id="walletModal" class="modal hide">
+      <div class="modal__backdrop"></div>
+      <div class="modal__panel">
+        <div class="modal__header">
+          <h3>Connect a wallet</h3>
+          <button id="modalClose" class="iconbtn" aria-label="Close">✕</button>
+        </div>
+        <div class="modal__content">
+          <button id="optMetaMask" class="walletopt">
+            <span class="walletopt__icon">🦊</span>
+            <span class="walletopt__title">MetaMask</span>
+            <span id="mmStatus" class="walletopt__status"></span>
+          </button>
+          <a id="mmInstall" class="walletopt walletopt--link hide" href="https://metamask.io/download/" target="_blank" rel="noreferrer">
+            👉 Install MetaMask
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress Modal -->
+    <div id="progressModal" class="modal hide" role="dialog" aria-modal="true">
+      <div class="modal__backdrop"></div>
+      <div class="modal__panel">
+        <div class="modal__header">
+          <h3>Processing…</h3>
+          <button id="progressClose" class="iconbtn" aria-label="Close">✕</button>
+        </div>
+        <ol id="progressList" class="progress">
+          <li data-step="enc">Encrypt</li>
+          <li data-step="send">Send</li>
+          <li data-step="confirm">Confirm</li>
+          <li data-step="decrypt">Decrypt</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- Top Bar -->
+    <header class="topbar">
+      <div class="topbar__left">
+        <a class="brand" href="#">
+          <span class="brand__dot"></span>
+          <span class="brand__name">Cross-Chain ETH Bridge — Private Metrics</span>
+          <span class="brand__badge">ZAMA FHEVM</span>
+        </a>
+      </div>
+      <div class="topbar__right">
+        <span id="pillNetwork" class="chip chip--muted">Network: –</span>
+        <span id="pillAddress" class="chip chip--ghost hide">–</span>
+        <div class="wallet">
+          <button id="btnWallet" class="btn btn--primary">Connect</button>
+          <div id="walletMenu" class="dropdown hide">
+            <button id="btnDisconnect" class="dropdown__item">Disconnect</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <!-- HERO -->
+      <section class="card card--hero">
+        <div class="card__head">
+          <h1 class="card__title">Bridge ETH &amp; keep metrics private</h1>
+          <div class="row gap">
+            <span id="pillContract" class="chip mono">—</span>
+          </div>
+        </div>
+
+        <!-- KPI row -->
+        <div class="kpi">
+          <div class="tile">
+            <div class="t-label">
+              S→B Volume (ETH)
+              <span class="tip" data-tip="Encrypted total S→B volume, decryptable only by you.">🛈</span>
+            </div>
+            <div id="vSB" class="t-num">—</div>
+          </div>
+          <div class="tile">
+            <div class="t-label">
+              S→B Transfers
+              <span class="tip" data-tip="Encrypted total S→B transfers, decryptable only by you.">🛈</span>
+            </div>
+            <div id="cSB" class="t-num">—</div>
+          </div>
+          <div class="tile">
+            <div class="t-label">
+              B→S Volume (ETH)
+              <span class="tip" data-tip="Encrypted total B→S volume, decryptable only by you.">🛈</span>
+            </div>
+            <div id="vBS" class="t-num">—</div>
+          </div>
+          <div class="tile">
+            <div class="t-label">
+              B→S Transfers
+              <span class="tip" data-tip="Encrypted total B→S transfers, decryptable only by you.">🛈</span>
+            </div>
+            <div id="cBS" class="t-num">—</div>
+          </div>
+          <div class="tile">
+            <div class="t-label">
+              S→B Public Volume (Snapshot)
+              <span class="tip" data-tip="Publicly revealed when k-anonymity is satisfied.">🛈</span>
+            </div>
+            <div id="pvSB" class="t-num">—</div>
+          </div>
+          <div class="tile">
+            <div class="t-label">
+              B→S Public Volume (Snapshot)
+              <span class="tip" data-tip="Publicly revealed when k-anonymity is satisfied.">🛈</span>
+            </div>
+            <div id="pvBS" class="t-num">—</div>
+          </div>
+        </div>
+
+        <!-- Charts row -->
+        <div class="charts">
+          <div class="chart">
+            <div class="chart__head">
+              Volume Split (ETH)
+              <span class="tip" data-tip="Share of S→B vs. B→S volumes.">🛈</span>
+            </div>
+            <canvas id="splitChart" height="120"></canvas>
+            <div class="contract chip">Contract: <span id="contractMini" class="mono"></span></div>
+          </div>
+          <div class="chart">
+            <div class="chart__head">
+              Transfers Split
+              <span class="tip" data-tip="Number of transfers S→B vs. B→S.">🛈</span>
+            </div>
+            <canvas id="countChart" height="120"></canvas>
+          </div>
+          <div class="chart">
+            <div class="chart__head">
+              Volume Trend (local)
+              <span class="tip" data-tip="Each refresh appends a new point.">🛈</span>
+            </div>
+            <canvas id="trendChart" height="120"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- ANALYTICS — отдельная карточка, контент центрирован -->
+      <section class="card card--analytics">
+        <div class="center">
+          <h3 class="sub">Analytics (private) — by direction</h3>
+          <div class="row gap" style="margin-bottom:8px">
+            <button id="btnRefreshAnalytics" class="btn btn--ghost tiny">📈 Refresh analytics</button>
+          </div>
+
+          <!-- S→B KPI line -->
+          <div class="kpi kpi--compact">
+            <div class="tile">
+              <div class="t-label">
+                S→B 24h Volume
+                <span class="tip" data-tip="Sum of your S→B amounts over the last 24 hours.">🛈</span>
+              </div>
+              <div id="sb24v" class="t-num">—</div>
+            </div>
+            <div class="tile">
+              <div class="t-label">
+                S→B 7d Volume
+                <span class="tip" data-tip="Sum of your S→B amounts over the last 7 days.">🛈</span>
+              </div>
+              <div id="sb7dv" class="t-num">—</div>
+            </div>
+            <div class="tile">
+              <div class="t-label">
+                S→B Median
+                <span class="tip" data-tip="Middle value of your S→B sizes over the last 7 days.">🛈</span>
+              </div>
+              <div id="sbMed" class="t-num">—</div>
+            </div>
+            <div class="tile">
+              <div class="t-label">
+                S→B P90
+                <span class="tip" data-tip="90% of your S→B transfers are ≤ this size (7d).">🛈</span>
+              </div>
+              <div id="sbP90" class="t-num">—</div>
+            </div>
+          </div>
+
+          <!-- B→S KPI line -->
+          <div class="kpi kpi--compact">
+            <div class="tile">
+              <div class="t-label">
+                B→S 24h Volume
+                <span class="tip" data-tip="Sum of your B→S amounts over the last 24 hours.">🛈</span>
+              </div>
+              <div id="bs24v" class="t-num">—</div>
+            </div>
+            <div class="tile">
+              <div class="t-label">
+                B→S 7d Volume
+                <span class="tip" data-tip="Sum of your B→S amounts over the last 7 days.">🛈</span>
+              </div>
+              <div id="bs7dv" class="t-num">—</div>
+            </div>
+            <div class="tile">
+              <div class="t-label">
+                B→S Median
+                <span class="tip" data-tip="Middle value of your B→S sizes over the last 7 days.">🛈</span>
+              </div>
+              <div id="bsMed" class="t-num">—</div>
+            </div>
+            <div class="tile">
+              <div class="t-label">
+                B→S P90
+                <span class="tip" data-tip="90% of your B→S transfers are ≤ this size (7d).">🛈</span>
+              </div>
+              <div id="bsP90" class="t-num">—</div>
+            </div>
+          </div>
+
+          <!-- Per-dir pies -->
+          <div class="charts charts--analytics">
+            <div class="chart">
+              <div class="chart__head">
+                S→B Size Mix (last 7d)
+                <span class="tip" data-tip="Small < Median, Medium [Median,P90), Large ≥ P90 for your last 7d.">🛈</span>
+              </div>
+              <canvas id="sizeChartSB" height="120"></canvas>
+            </div>
+            <div class="chart">
+              <div class="chart__head">
+                B→S Size Mix (last 7d)
+                <span class="tip" data-tip="Small < Median, Medium [Median,P90), Large ≥ P90 for your last 7d.">🛈</span>
+              </div>
+              <canvas id="sizeChartBS" height="120"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2 columns -->
+      <section class="grid">
+        <!-- Left: Bridge panel -->
+        <section class="card">
+          <div class="segmented" style="margin-bottom:12px; width:max-content;">
+            <button id="segDeposit" class="segmented__btn is-active">🛬 Deposit to Base Sepolia</button>
+            <button id="segWithdraw" class="segmented__btn">🛫 Withdraw to Sepolia</button>
+            <div class="segmented__thumb"></div>
+          </div>
+
+          <div class="field">
+            <label class="label">Amount (ETH) <button id="btnMax" class="linkbtn" type="button">MAX</button></label>
+            <input id="amtEth" type="text" placeholder="e.g., 0.05" />
+            <div id="amtBalance" class="hint">Balance: —</div>
+          </div>
+
+          <div class="row gap">
+            <button id="btnDoBridge" class="btn">🧺 Bridge &amp; Record</button>
+          </div>
+
+          <div class="hint" style="margin-top:10px">
+            Note: after bridging, the app encrypts the same amount and records it to <b>MetricsHub</b> on Sepolia
+            as a private metric (sum &amp; count). Individual transfers remain hidden.
+          </div>
+
+          <hr class="sep" />
+          <h3 class="sub">L2 → L1 Finalization</h3>
+          <div class="hint" style="margin-top:10px">
+            Note: Prove/Finalize are L1 transactions and require Sepolia ETH for gas.
+          </div>
+          <div id="finalStatus" class="status">No pending withdrawals yet.</div>
+          <div class="row gap" style="margin-bottom:8px">
+            <button id="btnRefreshFinal" class="btn btn--ghost tiny">🔄 Refresh</button>
+            <button id="btnFinalizeAll" class="btn btn--ghost tiny">✅ Finalize all ready</button>
+          </div>
+          <div id="finalList" class="history history--scrollable"></div>
+        </section>
+
+        <!-- Right: HISTORY -->
+        <section class="card">
+          <h3 class="sub" id="histTitle">My history — Sepolia → Base Sepolia</h3>
+          <div class="row gap" style="margin-bottom:10px">
+            <button id="btnRefreshHist" class="btn">📜 Refresh history</button>
+          </div>
+          <div id="histStatus" class="status">Connect a wallet to load history.</div>
+          <div id="histList" class="history history--scrollable"></div>
+        </section>
+      </section>
+
+      <!-- BOTTOM: READS / PUBLISH -->
+      <section class="card" style="margin-top:16px;">
+        <div class="segmented" style="margin-bottom:12px; width:max-content;">
+          <button id="segSB" class="segmented__btn is-active">🟡 Sepolia → Base Sepolia</button>
+          <button id="segBS" class="segmented__btn">🔵 Base Sepolia → Sepolia</button>
+          <div class="segmented__thumb"></div>
+        </div>
+
+        <div class="row gap" style="margin-bottom:10px">
+          <button id="btnPrivateRead" class="btn">🔐 Private read (Totals)</button>
+          <button id="btnPublicRead" class="btn btn--ghost">🔎 Public read (Snapshots)</button>
+        </div>
+
+        <hr class="sep" />
+        <label class="label">k-anonymity (min transfers to reveal)</label>
+        <input id="kAnon" type="number" min="1" step="1" value="5" />
+
+        <div class="row gap" style="margin-top:8px">
+          <button id="btnPublish" class="btn">📣 Publish snapshot</button>
+        </div>
+
+        <hr class="sep" />
+        <div id="status" class="status">Connect a wallet to start.</div>
+      </section>
+    </main>
+
+    <script type="module" src="./js/config.js"></script>
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>
