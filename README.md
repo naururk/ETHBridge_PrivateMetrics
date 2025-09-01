@@ -8,7 +8,7 @@ Built with **Zama FHEVM** (Solidity library + Relayer SDK), **ethers/viem**, and
 
 <h2>
  <p align="center">
-  <a href="https://drive.google.com/file/d/1u3MLLM-1Oo25XfNwgAtDRhaR-SEIKlOj/view?usp=sharing" target="_blank" rel="noopener noreferrer">
+  <a href="https://drive.google.com/file/d/1pe5I_9lrvU-Vvr6GY6tjqpavKjn6_Vuf/view?usp=sharing" target="_blank" rel="noopener noreferrer">
     🎥 Video ETHBridge_PrivateMetrics_demo
   </a>
  </p>
